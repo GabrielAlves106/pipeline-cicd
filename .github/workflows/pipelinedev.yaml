@@ -1,11 +1,9 @@
 name: Pipeline Demo CI/CD
-
 on:
   push:
     branches:
       - main
       - dev
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,10 +26,37 @@ jobs:
           pip install pytest
           pytest
 
+      - name: Zipar artefatos
+        run: |
+          zip -r artefatos.zip . \
+            --exclude="*.git*" \
+            --exclude="*__pycache__*" \
+            --exclude="*.pytest_cache*"
+          echo "Arquivo artefatos.zip criado com sucesso!"
+          ls -lh artefatos.zip
+
+      - name: Fazer upload do artefato zipado
+        uses: actions/upload-artifact@v4
+        with:
+          name: artefatos-build
+          path: artefatos.zip
+          retention-days: 7
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/dev'
     steps:
+      - name: Baixar artefato zipado
+        uses: actions/download-artifact@v4
+        with:
+          name: artefatos-build
+
+      - name: Deszipar artefatos
+        run: |
+          unzip artefatos.zip -d artefatos_extraidos
+          echo "Arquivos extraídos com sucesso!"
+          ls -lh artefatos_extraidos/
+
       - name: Simular Deploy
         run: echo "Deploy realizado com sucesso na branch DEV!"
