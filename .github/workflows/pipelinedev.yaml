@@ -1,9 +1,10 @@
-name: Pipeline Demo CI/CD (Dev Only)
+name: Pipeline Demo CI/CD
 
 on:
   push:
     branches:
-      - dev  # O pipeline agora só inicia se o push for na dev
+      - main
+      - dev
 
 jobs:
   build:
@@ -20,16 +21,17 @@ jobs:
       - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requerimentos.txt ]; then pip install -r requerimentos.txt; elif [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Rodar testes
-        run: pytest || echo "Nenhum teste encontrado ou erro na execução"
+        run: |
+          pip install pytest
+          pytest
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    # Garante que o deploy só ocorra se a branch for dev
     if: github.ref == 'refs/heads/dev'
     steps:
       - name: Simular Deploy
-        run: echo "Deploy realizado com sucesso no ambiente de DESENVOLVIMENTO!"
+        run: echo "Deploy realizado com sucesso na branch DEV!"
